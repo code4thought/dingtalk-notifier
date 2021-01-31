@@ -1,0 +1,22 @@
+{
+  "name": "dingtalk-notifier",
+  "version": "0.0.1",
+  "description": "Just make the web version of dingtalk more noticeable.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code4thought/dingtalk-notifier.git"
+  },
+  "author": "Code4Thought",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/code4thought/dingtalk-notifier/issues"
+  },
+  "homepage": "https://github.com/code4thought/dingtalk-notifier#readme",
+  "devDependencies": {
+    "electron": "^11.2.1"
+  }
+}
