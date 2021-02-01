@@ -30,7 +30,6 @@ const observer = new MutationObserver((mutationsList, observer) => {
                 if (msgItem.querySelector('user-name')) {
                     needSkipOne = true
                 }
-                console.log(value)
                 return // Skip the history
             }
         }
@@ -59,9 +58,8 @@ const observer = new MutationObserver((mutationsList, observer) => {
             const messageContent = getMessageContentText(contentElement)
             const message = userName === convTitle ? messageContent : `${userName}: ${messageContent}`
 
-
+            console.log(`contentPannel - ${convTitle}: ${message}`)
             //TODO send notification
-            console.log(`${convTitle}: ${message}`)
         }
 
     })

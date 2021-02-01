@@ -21,7 +21,7 @@ const observer = new MutationObserver((mutationsList, observer) => {
                 && value.target.parentNode.nextElementSibling.children.length > 1) {
                 const greatGrandParent = value.target.parentNode.parentNode.parentNode;
                 const title = greatGrandParent.children[0].children[0].children[0].innerText
-                console.log(`${title}: ${newMessage}`)
+                console.log(`subMenuPannel - ${title}: ${newMessage}`)
                 //TODO send message notification
             }
         }
