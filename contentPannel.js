@@ -79,7 +79,7 @@ function getMessageContentText(htmlContent) {
     }
     switch (ngSwitchWhen.value) {
         case 'msg-text':
-            return bubbleDiv.children[0].innerText
+            return getTextMessageSummary(bubbleDiv.children[0])
         case 'msg-img':
             return '[图片]'
         case 'msg-img-text':
@@ -107,6 +107,22 @@ function getMessageContentText(htmlContent) {
 
         default:
             return `[未知内容类型: ${ngSwitchWhen.value}]`
+    }
+}
+
+const regexSticker = /^\<img.* title=\"(.*?)\" .*\>$/gi
+const regexEmoji = /^\<img.* alt=\"(.*?)\" .*\>$/gi
+const regexImg = /\<img .*?\>/gi
+
+function getTextMessageSummary(htmlContent) {
+    if (htmlContent.nodeName === "CODE-SNIPPET-CONTAINER") {
+        return '[代码片段]'
+    } else {
+        return htmlContent.innerHTML.replace(regexImg, (match) => {
+            return match.replace(regexSticker, (match, p1) => p1)
+                .replace(regexEmoji, (match, p1) => p1)
+                .replace(regexImg, (match) => '[图片]')
+        })
     }
 }
 
