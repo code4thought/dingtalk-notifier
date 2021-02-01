@@ -1,3 +1,5 @@
+const { ipcRenderer } = require('electron')
+
 const observeConfig = {
     childList: true,
     attributes: false,
@@ -59,7 +61,7 @@ const observer = new MutationObserver((mutationsList, observer) => {
             const message = userName === convTitle ? messageContent : `${userName}: ${messageContent}`
 
             console.log(`contentPannel - ${convTitle}: ${message}`)
-            //TODO send notification
+            ipcRenderer.invoke('notify-message', convTitle, message, true)
         }
 
     })

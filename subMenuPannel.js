@@ -1,3 +1,5 @@
+const { ipcRenderer } = require('electron')
+
 const observeConfig = {
     childList: true,
     attributes: false,
@@ -22,7 +24,7 @@ const observer = new MutationObserver((mutationsList, observer) => {
                 const greatGrandParent = value.target.parentNode.parentNode.parentNode;
                 const title = greatGrandParent.children[0].children[0].children[0].innerText
                 console.log(`subMenuPannel - ${title}: ${newMessage}`)
-                //TODO send message notification
+                ipcRenderer.invoke('notify-message', title, newMessage, false)
             }
         }
     })

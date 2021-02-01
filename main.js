@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain, Notification } = require('electron')
 const path = require('path')
 
 function createWindow() {
@@ -25,6 +25,9 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+
+var currentNotification = null;
+
 app.whenReady().then(() => {
     createWindow()
 
@@ -34,8 +37,24 @@ app.whenReady().then(() => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
 
-    ipcMain.handle('notify-unread', (event) => {
+    ipcMain.handle('notify-unreadNumber', (event, unreadNumber) => {
         console.log('new unread message!!')
+    })
+    ipcMain.handle('notify-message', (event, title, content, isContentPannelFocusing) => {
+        if (currentNotification !== null) {
+            currentNotification.close()
+        }
+        currentNotification = new Notification({
+            title,
+            body: content,
+            silent: false,
+            timeoutType: 'never',
+            urgency: 'critical'
+        })
+        currentNotification.on('click', (evnet) => {
+            console.log(event)
+        })
+        currentNotification.show()
     })
 
 })
