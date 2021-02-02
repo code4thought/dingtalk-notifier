@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/code4thought/dingtalk-notifier#readme",
   "devDependencies": {
-    "electron": "^11.2.1"
+    "electron": "^11.2.1",
+    "electron-builder": "^22.9.1"
   }
 }
