@@ -1,34 +1,114 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain, Notification } = require('electron')
+const { app, BrowserWindow, ipcMain, Notification, Tray, shell, Menu } = require('electron')
 const path = require('path')
 
+var mainWindow
+var currentNotification = null
+var contentPannelUnreadNumber = 0
+var menuPannelUnreadNumber = 0
+var tray
+var noMessgeTrayImg = path.join(__dirname, 'build/oldIcon.png')
+var newMessageTrayImg = path.join(__dirname, 'build/newIcon.png')
+var currentTrayImg = noMessgeTrayImg
+var currentTrayToolTip = '无消息'
+var forceQuit = false
+
 function createWindow() {
+
     // Create the browser window.
-    const mainWindow = new BrowserWindow({
-        width: 1024,
-        height: 768,
+    mainWindow = new BrowserWindow({
+        width: 1000,
+        height: 602,
+        useContentSize: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             enableRemoteModule: false
         },
+        icon: path.join(__dirname, 'build/icon.png')
+    })
 
+    mainWindow.webContents.on('new-window', (event, url) => {
+        event.preventDefault()
+        shell.openExternal(url)
     })
 
     // and load the index.html of the app.
     // mainWindow.loadFile('index.html')
     mainWindow.loadURL("https://im.dingtalk.com/")
 
+    //Tray
+    tray = new Tray(currentTrayImg)
+    tray.on('click', () => { mainWindow.show() })
+
+    mainWindow.on('focus', () => {
+        contentPannelUnreadNumber = 0
+        updateTray()
+    })
+
+    mainWindow.on('close', (event) => {
+        if(!forceQuit){
+            event.preventDefault()
+            mainWindow.hide()
+        }
+    })
+
     // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+    //mainWindow.webContents.openDevTools()
+}
+
+function updateTray() {
+    var newToolTip
+    var newTrayImg
+    var totalUnread = contentPannelUnreadNumber + menuPannelUnreadNumber
+    if (totalUnread > 0) {
+        newToolTip = `${totalUnread}条消息`
+        newTrayImg = newMessageTrayImg
+    } else {
+        newToolTip = '无消息'
+        newTrayImg = noMessgeTrayImg
+    }
+
+    //Check if need update
+    if (currentTrayImg !== newTrayImg) {
+        currentTrayImg = newTrayImg
+        tray.setImage(currentTrayImg)
+    }
+    if (currentTrayToolTip !== newToolTip) {
+        currentTrayToolTip = newToolTip
+        tray.setToolTip(currentTrayToolTip)
+    }
+
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-
-var currentNotification = null;
-
 app.whenReady().then(() => {
+
+    var menu = Menu.buildFromTemplate([
+        {
+            label: 'Menu',
+            submenu: [
+                {
+                    label: 'DevTool',
+                    accelerator: 'CmdOrCtrl+Shift+I',
+                    click: function () {
+                        mainWindow.webContents.openDevTools()
+                    }
+                },
+                {
+                    label: 'Quit',
+                    accelerator: 'CmdOrCtrl+Q',
+                    click: function () {
+                        forceQuit = true; app.quit();
+                    }
+                }
+            ]
+        }
+    ])
+
+    Menu.setApplicationMenu(menu)
+
     createWindow()
 
     app.on('activate', function () {
@@ -38,8 +118,10 @@ app.whenReady().then(() => {
     })
 
     ipcMain.handle('notify-unreadNumber', (event, unreadNumber) => {
-        console.log('new unread message!!')
+        menuPannelUnreadNumber = unreadNumber
+        updateTray()
     })
+
     ipcMain.handle('notify-message', (event, title, content, isContentPannelFocusing) => {
         if (currentNotification !== null) {
             currentNotification.close()
@@ -49,14 +131,19 @@ app.whenReady().then(() => {
             body: content,
             silent: false,
             timeoutType: 'never',
-            urgency: 'critical'
+            urgency: 'critical',
+            icon: newMessageTrayImg
         })
         currentNotification.on('click', (evnet) => {
-            console.log(event)
+            mainWindow.show()
         })
         currentNotification.show()
+        if (isContentPannelFocusing && mainWindow.isFocused()) {
+            return //Ignore when mainWindow is focused and message is current conversation
+        }
+        contentPannelUnreadNumber++
+        updateTray()
     })
-
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -64,6 +151,13 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('before-quit', (event) => {
+    if (!forceQuit) {
+        event.preventDefault()
+        mainWindow.hide()
+    }
 })
 
 // In this file you can include the rest of your app's specific main process
