@@ -36,17 +36,13 @@ function createWindow() {
     // mainWindow.loadFile('index.html')
     mainWindow.loadURL("https://im.dingtalk.com/")
 
-    //Tray
-    tray = new Tray(currentTrayImg)
-    tray.on('click', () => { mainWindow.show() })
-
     mainWindow.on('focus', () => {
         contentPannelUnreadNumber = 0
         updateTray()
     })
 
     mainWindow.on('close', (event) => {
-        if(!forceQuit){
+        if (!forceQuit) {
             event.preventDefault()
             mainWindow.blur()
             mainWindow.hide()
@@ -86,7 +82,7 @@ function updateTray() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
 
-    var menu = Menu.buildFromTemplate([
+    const menu = Menu.buildFromTemplate([
         {
             label: 'Menu',
             submenu: [
@@ -109,6 +105,26 @@ app.whenReady().then(() => {
     ])
 
     Menu.setApplicationMenu(menu)
+
+    //Tray
+    tray = new Tray(currentTrayImg)
+    tray.on('click', () => { mainWindow.show() })
+    const trayMenu = Menu.buildFromTemplate([
+        {
+            label: 'ShowMainWindow',
+            click: function () {
+                mainWindow.show()
+            }
+        },
+        {
+            label: 'Quit',
+            accelerator: 'CmdOrCtrl+Q',
+            click: function () {
+                forceQuit = true; app.quit();
+            }
+        }
+    ])
+    tray.setContextMenu(trayMenu)
 
     createWindow()
 
