@@ -4,7 +4,8 @@
   "description": "Just make the web version of dingtalk more noticeable.",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder build"
   },
   "repository": {
     "type": "git",
@@ -19,5 +20,21 @@
   "devDependencies": {
     "electron": "^11.2.1",
     "electron-builder": "^22.9.1"
+  },
+  "build": {
+    "appId": "com.code4thought.dingtalk-notifier",
+    "files": [
+      "**/*",
+      "build/*"
+    ],
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": "x64"
+        }
+      ],
+      "category": "Utility"
+    }
   }
 }
