@@ -48,6 +48,7 @@ function createWindow() {
     mainWindow.on('close', (event) => {
         if(!forceQuit){
             event.preventDefault()
+            mainWindow.blur()
             mainWindow.hide()
         }
     })
