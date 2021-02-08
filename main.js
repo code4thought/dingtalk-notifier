@@ -82,6 +82,18 @@ function updateTray() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
 
+    const gotTheLock = app.requestSingleInstanceLock()
+    if (!gotTheLock) {
+        app.quit()
+        return
+    } else {
+        app.on('second-instance', (event, commandLine, workingDirectory) => {
+            if (mainWindow) {
+                mainWindow.show()
+            }
+        })
+    }
+
     const menu = Menu.buildFromTemplate([
         {
             label: 'Menu',
