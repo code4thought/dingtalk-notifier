@@ -22,7 +22,13 @@ function createWindow() {
         useContentSize: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            enableRemoteModule: false
+            enableRemoteModule: false,
+            defaultFontFamily: {
+                standard: 'Noto Serif CJK SC',
+                serif: 'Noto Serif CJK SC',
+                sansSerif: 'Noto Sans CJK SC',
+                monospace: 'Noto Sans Mono CJK SC'
+            }
         },
         icon: path.join(__dirname, 'build/icon.png')
     })
