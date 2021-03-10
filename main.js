@@ -28,14 +28,99 @@ function createWindow() {
                 serif: 'Noto Serif CJK SC',
                 sansSerif: 'Noto Sans CJK SC',
                 monospace: 'Noto Sans Mono CJK SC'
-            }
+            },
+            nativeWindowOpen: true
         },
         icon: path.join(__dirname, 'build/icon.png')
     })
 
-    mainWindow.webContents.on('new-window', (event, url) => {
+    var urlRegex = /^(http:\/\/|https:\/\/)/
+
+    /**
+     * Used to prevent invoke browseWindow.close()
+     */
+    const closedBrowserWindowMap = new Map();
+
+    /**
+     * Make new window not visible
+     */
+    mainWindow.webContents.setWindowOpenHandler((details) => {
+        return {
+            action: 'allow',
+            overrideBrowserWindowOptions: {
+                show: false
+            }
+        }
+    })
+
+    /**
+     * When the script use window.open(), can not get the real url(it's always be about:blank),
+     * so use the 'will-navigate', 'did-start-navigation', 'did-navigate' events to obtain.
+     */
+    mainWindow.webContents.on('did-create-window', (window, details) => {
+        if (closedBrowserWindowMap.get(window) === undefined) {
+            closedBrowserWindowMap.set(window, false)
+        }
+
+        function closeAndRemoveFromMap() {
+            window.close()
+            setTimeout(() => { closedBrowserWindowMap.delete(window) }, 10 * 1000)
+        }
+
+        if (details.url && details.url.match(urlRegex) && closedBrowserWindowMap.get(window) === false) {
+            closedBrowserWindowMap.set(window, true)
+            shell.openExternal(details.url)
+            closeAndRemoveFromMap()
+            return
+        }
+
+        window.webContents.on('will-navigate', (event, url) => {
+            if (url && url.match(urlRegex) && closedBrowserWindowMap.get(window) === false) {
+                closedBrowserWindowMap.set(window, true)
+                event.preventDefault()
+                shell.openExternal(url)
+                closeAndRemoveFromMap()
+            }
+        })
+        window.webContents.on('did-start-navigation', (event, url) => {
+            if (url && url.match(urlRegex) && closedBrowserWindowMap.get(window) === false) {
+                closedBrowserWindowMap.set(window, true)
+                event.preventDefault()
+                shell.openExternal(url)
+                closeAndRemoveFromMap()
+            }
+        })
+        window.webContents.on('did-navigate', (event, url) => {
+            if (url && url.match(urlRegex) && closedBrowserWindowMap.get(window) === false) {
+                closedBrowserWindowMap.set(window, true)
+                event.preventDefault()
+                shell.openExternal(url)
+                closeAndRemoveFromMap()
+            }
+        })
+    })
+
+    /**
+     * When click video in chat create new BrowserWindow to show.
+     */
+    mainWindow.webContents.on('will-navigate', (event, url) => {
+        if (url && url.match(/^(http|https)\:\/\/im.dingtalk.com(:|\/|$)/)) {
+            return
+        }
         event.preventDefault()
-        shell.openExternal(url)
+        new BrowserWindow({
+            icon: path.join(__dirname, 'build/icon.png'),
+            autoHideMenuBar: true,
+            webPreferences: {
+                defaultFontFamily: {
+                    standard: 'Noto Serif CJK SC',
+                    serif: 'Noto Serif CJK SC',
+                    sansSerif: 'Noto Sans CJK SC',
+                    monospace: 'Noto Sans Mono CJK SC'
+                },
+                nativeWindowOpen: true
+            }
+        }).loadURL(url)
     })
 
     // and load the index.html of the app.
