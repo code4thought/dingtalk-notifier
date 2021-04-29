@@ -13,6 +13,8 @@ var currentTrayImg = noMessgeTrayImg
 var currentTrayToolTip = '无消息'
 var forceQuit = false
 
+var currentContentPannelIsMuted = false
+
 function createWindow() {
 
     // Create the browser window.
@@ -243,6 +245,12 @@ app.whenReady().then(() => {
     })
 
     ipcMain.handle('notify-message', (event, title, content, isContentPannelFocusing) => {
+
+        // Ignore if the message is from content pannel and the content pannel is muted
+        if (isContentPannelFocusing && currentContentPannelIsMuted) {
+            return
+        }
+
         if (currentNotification !== null) {
             currentNotification.close()
         }
@@ -263,6 +271,10 @@ app.whenReady().then(() => {
         }
         contentPannelUnreadNumber++
         updateTray()
+    })
+
+    ipcMain.handle('active-conversation', (event, isMuted) => {
+        currentContentPannelIsMuted = isMuted
     })
 })
 
