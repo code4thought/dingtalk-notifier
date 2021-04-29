@@ -1,6 +1,6 @@
 {
   "name": "dingtalk-notifier",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Just make the web version of dingtalk more noticeable.",
   "main": "main.js",
   "scripts": {
